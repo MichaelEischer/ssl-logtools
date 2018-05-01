@@ -16,6 +16,8 @@
 #include <QMainWindow>
 #include <QLabel>
 
+class QTimer;
+
 namespace Ui {
 class MainWindow;
 }
@@ -39,12 +41,15 @@ private slots:
     void userSliderChange();
     void seekFrame(int frame);
     void updatePosition(int frame, double time);
+    void timerCallback();
 
 private:
     Ui::MainWindow* m_ui;
     QLabel* m_statusLabel;
+    QTimer* m_timer;
     Player m_player;
     int m_currentFrame;
+    double m_currentTime;
     bool m_stopped;
 };
 

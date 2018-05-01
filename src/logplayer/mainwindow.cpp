@@ -13,6 +13,7 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QSettings>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
@@ -33,6 +34,9 @@ MainWindow::MainWindow(QWidget* parent) :
 
     m_statusLabel = new QLabel;
     statusBar()->addPermanentWidget(m_statusLabel);
+
+    m_timer = new QTimer(this);
+    connect(m_timer, SIGNAL(timeout()), SLOT(timerCallback()));
 
     QSettings s;
     s.beginGroup("MainWindow");
@@ -134,14 +138,22 @@ void MainWindow::setStopped(bool p)
 void MainWindow::updatePosition(int frame, double time)
 {
     m_currentFrame = frame;
+    m_currentTime = time;
+    if (!m_timer->isActive()) {
+        // throttle label update
+        m_timer->start(50);
+    }
+}
 
+void MainWindow::timerCallback()
+{
     if (!m_ui->horizontalSlider->isSliderDown()) {
-        m_ui->horizontalSlider->setValue(frame);
+        m_ui->horizontalSlider->setValue(m_currentFrame);
     }
 
-    m_ui->lblPacketCurrent->setText(QString::number(frame));
+    m_ui->lblPacketCurrent->setText(QString::number(m_currentFrame));
     m_ui->lblTimeCurrent->setText(QString("%1:%2.%3")
-        .arg((int) (time / 1E9) / 60)
-        .arg((int) (time / 1E9) % 60, 2, 10, QChar('0'))
-        .arg((int) (time / 1E6) % 1000, 3, 10, QChar('0')));
+        .arg((int) (m_currentTime / 1E9) / 60)
+        .arg((int) (m_currentTime / 1E9) % 60, 2, 10, QChar('0'))
+        .arg((int) (m_currentTime / 1E6) % 1000, 3, 10, QChar('0')));
 }
